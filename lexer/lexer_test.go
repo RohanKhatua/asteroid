@@ -15,6 +15,7 @@ func TestNextToken(t *testing.T) {
 
 	// tests in as array of TestTokenType
 	// each TestTokenType consists of an expected type and an expected literal corresponding to that type
+	// this is what we are expecting our lexer to produce - we compare the generated value to this known correct mapping.
 
 	tests := []TestTokenType{
 		{token.ASSIGN, "="},
@@ -28,10 +29,11 @@ func TestNextToken(t *testing.T) {
 		{token.EOF, ""},
 	}
 
-	l = New(input)
+	l := New(input)
 
 	for i, tt := range tests {
-		tok := l.NextToken()
+		tok := l.nextToken()
+		// get the next token and compare it with our test
 
 		if tok.Type != tt.expectedType {
 			t.Fatalf("tests[%d] - token type wrong, expected=%q, got=%q", i, tt.expectedType, tok.Type)
