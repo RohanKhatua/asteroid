@@ -7,6 +7,8 @@ type Token struct {
 	Literal string
 }
 
+// Define the token types - these are the types of tokens that the lexer can produce.
+// Very very preliminary - we will add more as we go along.
 const (
 	// miscellaenous
 	ILLEGAL = "ILLEGAL"
