@@ -4,7 +4,7 @@ An Interpreter for the Asteroid programming language. Written following the book
 
 ## Current Features
 
-- [x] Simple Tokenizer (Lexer)
+- [x] Simple Tokenizer (Lexer) - accepts multi-character operators and basic keywords.
 
 ## Known Limitations
 
