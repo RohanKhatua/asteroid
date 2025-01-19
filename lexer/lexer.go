@@ -53,7 +53,27 @@ func (l *Lexer) nextToken() token.Token {
 
 	switch l.ch {
 	case '=':
-		tok = newToken(token.ASSIGN, l.ch)
+		// check if the next character is an equal sign - if it is then it is a comparison operator.
+		if l.peekChar() == '=' {
+			// Store the current character in ch
+			ch := l.ch
+			// read the next character - this will be the second character in the comparison operator.
+			l.readChar()
+			tok = token.Token{Type: token.EQ, Literal: string(ch) + string(l.ch)}
+		} else {
+			tok = newToken(token.ASSIGN, l.ch)
+		}
+	case '!':
+		// check if the next character is an equal sign - if it is then it is a comparison operator.
+		if l.peekChar() == '=' {
+			// Store the current character in ch
+			ch := l.ch
+			// read the next character - this will be the second character in the comparison operator.
+			l.readChar()
+			tok = token.Token{Type: token.NOT_EQ, Literal: string(ch) + string(l.ch)}
+		} else {
+			tok = newToken(token.EXCLAMATION, l.ch)
+		}
 	case ';':
 		tok = newToken(token.SEMICOLON, l.ch)
 	case '(':
@@ -68,6 +88,16 @@ func (l *Lexer) nextToken() token.Token {
 		tok = newToken(token.LBRACE, l.ch)
 	case '}':
 		tok = newToken(token.RBRACE, l.ch)
+	case '-':
+		tok = newToken(token.MINUS, l.ch)
+	case '/':
+		tok = newToken(token.SLASH, l.ch)
+	case '*':
+		tok = newToken(token.ASTERISK, l.ch)
+	case '<':
+		tok = newToken(token.LT, l.ch)
+	case '>':
+		tok = newToken(token.GT, l.ch)
 	case 0:
 		// Default case - EOF
 		tok.Literal = ""
@@ -132,5 +162,15 @@ func (l *Lexer) skipWhitespace() {
 	// skip over any whitespace characters.
 	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
 		l.readChar()
+	}
+}
+
+// peekChar is used to peek at the next character in the input.
+// This is very similar to readChar but does not advance the position.
+func (l *Lexer) peekChar() byte {
+	if l.readPosition >= len(l.input) {
+		return 0
+	} else {
+		return l.input[l.readPosition]
 	}
 }
