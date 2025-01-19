@@ -113,6 +113,7 @@ func (l *Lexer) readIdentifier() string {
 }
 
 // readNumber reads a number and advances the lexer's position until it encounters a non-digit character.
+// Limitation - only supports integers. No support for floating point numbers.
 func (l *Lexer) readNumber() string {
 	position := l.position
 	for utils.IsDigit(l.ch) {
