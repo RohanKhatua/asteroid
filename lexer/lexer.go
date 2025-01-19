@@ -45,7 +45,7 @@ func (l *Lexer) readChar() {
 // returns the next token one by one - each token consists of a type and literal.
 // The literal is the value of the token.
 // The type is the type of the token.
-func (l *Lexer) nextToken() token.Token {
+func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 	// check the current character and assign the token type accordingly
 

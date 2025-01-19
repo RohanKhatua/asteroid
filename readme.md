@@ -5,6 +5,7 @@ An Interpreter for the Asteroid programming language. Written following the book
 ## Current Features
 
 - [x] Simple Tokenizer (Lexer) - accepts multi-character operators and basic keywords.
+- [x] REPL (Read-Eval-Print-Loop) - accepts single line input and prints the tokens generated.
 
 ## Known Limitations
 
