@@ -29,6 +29,6 @@ jobs:
         run: |
           git config --global user.name "RohanKhatua"
           git config --global user.email "contact@rohankhatua.dev"
-          git add README.md
+          git add readme.md
           git commit -m "Update README.md with LOC data"
           git push
