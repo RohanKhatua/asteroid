@@ -57,7 +57,7 @@ func main() {
 	}
 
 	// Read the existing README.md file
-	readmePath := "README.md"
+	readmePath := "readme.md"
 	readmeContent, err := ioutil.ReadFile(readmePath)
 	if err != nil {
 		fmt.Printf("Error reading README.md: %v\n", err)
