@@ -10,11 +10,9 @@ import (
 // the testing for the values will be done later.
 
 func TestLetStatements(t *testing.T) {
-	input := `
-		let x = 5;
+	input := `let x = 5;
 		let y = 10;
-		letfoobar = 83838;
-	`
+		let foobar = 83838;`
 
 	l := lexer.New(input)
 	p := New(l)
