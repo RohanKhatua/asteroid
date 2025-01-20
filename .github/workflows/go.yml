@@ -1,28 +1,62 @@
-# This workflow will build a golang project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
-
-name: Go
+name: Go Build, Test, and Release
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    tags:
+      - 'v*'
 
 jobs:
-
-  build:
+  build-test-release:
     runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
 
+    strategy:
+      matrix:
+        os: [linux, windows, darwin]
+        arch: [amd64, arm64]
+
+    steps:
+    # Step 1: Checkout code
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # Step 2: Set up Go environment
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.22.6'
+        go-version: '1.22.6' # Update with your Go version
 
+    # Step 3: Install dependencies
+    - name: Install dependencies
+      run: go mod tidy
+
+    # Step 4: Run tests
+    - name: Run tests
+      run: go test ./... -v
+
+    # Step 5: Build the Go binary for multiple platforms
     - name: Build
-      run: go build -v ./...
+      run: |
+        GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -o asteroid-${{ matrix.os }}-${{ matrix.arch }}
 
-    - name: Test
-      run: go test -v ./...
+    # Step 6: Create a GitHub Release
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref_name }}
+        release_name: Release ${{ github.ref_name }}
+        draft: false
+        prerelease: false
+
+    # Step 7: Upload the built binaries to the release
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./asteroid-${{ matrix.os }}-${{ matrix.arch }}
+        asset_name: asteroid-${{ matrix.os }}-${{ matrix.arch }}
+        asset_content_type: application/octet-stream
