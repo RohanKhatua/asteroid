@@ -27,8 +27,8 @@ jobs:
       # Step 4: Commit and push changes
       - name: Commit and push changes
         run: |
-          git config --global user.name "GitHub Actions Bot"
-          git config --global user.email "actions@github.com"
+          git config --global user.name "RohanKhatua"
+          git config --global user.email "contact@rohankhatua.dev"
           git add README.md
           git commit -m "Update README.md with LOC data"
           git push
