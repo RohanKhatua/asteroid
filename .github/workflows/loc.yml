@@ -1,14 +1,11 @@
 name: Update README
-
 on:
   push:
     branches:
       - main
-
 jobs:
   update-readme:
     runs-on: ubuntu-latest
-
     steps:
       # Step 1: Checkout repository
       - name: Checkout code
@@ -25,9 +22,11 @@ jobs:
           LOC_DATA=$(curl -s "https://api.codetabs.com/v1/loc/?github=rohankhatua/asteroid&branch=main")
           echo "Fetched LOC data: $LOC_DATA"
 
-          # Build the Markdown table
-          TABLE="| Language    | Files | Lines | Blanks | Comments | Lines of Code |\n"
-          TABLE+="|-------------|-------|-------|--------|----------|---------------|\n"
+          # Build the Markdown table with proper spacing
+          TABLE="| Language | Files | Lines | Blanks | Comments | Lines of Code |\n"
+          TABLE+="|----------|-------|-------|---------|-----------|---------------|\n"
+
+          # Process each line of data and ensure proper formatting
           while IFS= read -r line; do
             LANG=$(echo "$line" | jq -r '.language')
             FILES=$(echo "$line" | jq -r '.files')
@@ -35,20 +34,20 @@ jobs:
             BLANKS=$(echo "$line" | jq -r '.blanks')
             COMMENTS=$(echo "$line" | jq -r '.comments')
             LOC=$(echo "$line" | jq -r '.linesOfCode')
-            TABLE+=$(printf "| %-11s | %-5s | %-5s | %-6s | %-8s | %-13s |\n" "$LANG" "$FILES" "$LINES" "$BLANKS" "$COMMENTS" "$LOC")
+            
+            # Use printf with exact spacing and no padding
+            ROW=$(printf "| %s | %s | %s | %s | %s | %s |\n" "$LANG" "$FILES" "$LINES" "$BLANKS" "$COMMENTS" "$LOC")
+            TABLE+="$ROW"
           done < <(echo "$LOC_DATA" | jq -c '.[]')
 
           echo "Generated Table:"
           echo -e "$TABLE"
 
-          # Replace the content between markers in README.md
-          START_MARKER="<!---start--->"
-          END_MARKER="<!---end--->"
-          README_CONTENT=$(cat readme.md)
-          UPDATED_CONTENT=$(echo "$README_CONTENT" | sed -E "/$START_MARKER/,/$END_MARKER/c\\$START_MARKER\n\n$TABLE\n\n$END_MARKER")
-          echo "Updated README.md content:"
-          echo "$UPDATED_CONTENT"
-          echo "$UPDATED_CONTENT" > readme.md
+          # Replace the content between markers in README.md using perl for better multiline handling
+          perl -i -pe 'BEGIN{undef $/;} s/<!---start--->\K.*?(?=<!---end--->)/\n\n'"$TABLE"'\n/s' readme.md
+
+          # Verify the update
+          cat readme.md
 
       # Step 4: Commit and push changes
       - name: Commit and push changes
