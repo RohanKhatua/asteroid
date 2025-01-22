@@ -44,21 +44,23 @@ jobs:
           # Clean up temp file
           rm "$TABLE_FILE"
 
-          # Use awk to handle the replacement with proper newlines
+          # Use awk to properly replace content between markers
           awk -v table="$TABLE" '
+          BEGIN { printing = 1 }
           /<!---start--->/ {
-            print;
-            print "";
-            print table;
-            print "";
-            next;
+            printing = 0
+            print
+            print ""
+            print table
+            print ""
           }
           /<!---end--->/ {
-            print;
-            next;
+            printing = 1
+            print
+            next
           }
-          !/<!---start--->/ && !/<!---end--->/ {
-            print;
+          printing {
+            print
           }
           ' readme.md > readme.tmp && mv readme.tmp readme.md
 
