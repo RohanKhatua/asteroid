@@ -7,27 +7,27 @@ jobs:
   update-readme:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Checkout repository
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Install dependencies (jq)
       - name: Install jq
         run: sudo apt-get install -y jq
 
-      # Step 3: Fetch LOC data and update README.md
       - name: Fetch LOC data and update README.md
         run: |
           # Fetch LOC data from Codetabs API
           LOC_DATA=$(curl -s "https://api.codetabs.com/v1/loc/?github=rohankhatua/asteroid&branch=main")
           echo "Fetched LOC data: $LOC_DATA"
 
-          # Build the Markdown table with proper spacing
-          TABLE="| Language | Files | Lines | Blanks | Comments | Lines of Code |\n"
-          TABLE+="|----------|-------|-------|---------|-----------|---------------|\n"
+          # Create a temporary file for the table
+          TABLE_FILE=$(mktemp)
 
-          # Process each line of data and ensure proper formatting
-          while IFS= read -r line; do
+          # Write header to temp file
+          echo "| Language | Files | Lines | Blanks | Comments | Lines of Code |" > "$TABLE_FILE"
+          echo "|----------|-------|-------|---------|-----------|---------------|" >> "$TABLE_FILE"
+
+          # Process each line of data and write to temp file
+          echo "$LOC_DATA" | jq -c '.[]' | while read -r line; do
             LANG=$(echo "$line" | jq -r '.language')
             FILES=$(echo "$line" | jq -r '.files')
             LINES=$(echo "$line" | jq -r '.lines')
@@ -35,21 +35,36 @@ jobs:
             COMMENTS=$(echo "$line" | jq -r '.comments')
             LOC=$(echo "$line" | jq -r '.linesOfCode')
             
-            # Use printf with exact spacing and no padding
-            ROW=$(printf "| %s | %s | %s | %s | %s | %s |\n" "$LANG" "$FILES" "$LINES" "$BLANKS" "$COMMENTS" "$LOC")
-            TABLE+="$ROW"
-          done < <(echo "$LOC_DATA" | jq -c '.[]')
+            echo "| $LANG | $FILES | $LINES | $BLANKS | $COMMENTS | $LOC |" >> "$TABLE_FILE"
+          done
 
-          echo "Generated Table:"
-          echo -e "$TABLE"
+          # Read the generated table
+          TABLE=$(<"$TABLE_FILE")
 
-          # Replace the content between markers in README.md using perl for better multiline handling
-          perl -i -pe 'BEGIN{undef $/;} s/<!---start--->\K.*?(?=<!---end--->)/\n\n'"$TABLE"'\n/s' readme.md
+          # Clean up temp file
+          rm "$TABLE_FILE"
+
+          # Use awk to handle the replacement with proper newlines
+          awk -v table="$TABLE" '
+          /<!---start--->/ {
+            print;
+            print "";
+            print table;
+            print "";
+            next;
+          }
+          /<!---end--->/ {
+            print;
+            next;
+          }
+          !/<!---start--->/ && !/<!---end--->/ {
+            print;
+          }
+          ' readme.md > readme.tmp && mv readme.tmp readme.md
 
           # Verify the update
           cat readme.md
 
-      # Step 4: Commit and push changes
       - name: Commit and push changes
         run: |
           git config --global user.name "RohanKhatua"
