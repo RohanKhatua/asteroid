@@ -28,7 +28,7 @@ jobs:
           # Build the Markdown table
           TABLE="| Language    | Files | Lines | Blanks | Comments | Lines of Code |\n"
           TABLE+="|-------------|-------|-------|--------|----------|---------------|\n"
-          echo "$LOC_DATA" | jq -c '.[]' | while read -r line; do
+          while IFS= read -r line; do
             LANG=$(echo "$line" | jq -r '.language')
             FILES=$(echo "$line" | jq -r '.files')
             LINES=$(echo "$line" | jq -r '.lines')
@@ -36,7 +36,8 @@ jobs:
             COMMENTS=$(echo "$line" | jq -r '.comments')
             LOC=$(echo "$line" | jq -r '.linesOfCode')
             TABLE+=$(printf "| %-11s | %-5s | %-5s | %-6s | %-8s | %-13s |\n" "$LANG" "$FILES" "$LINES" "$BLANKS" "$COMMENTS" "$LOC")
-          done
+          done < <(echo "$LOC_DATA" | jq -c '.[]')
+
           echo "Generated Table:"
           echo -e "$TABLE"
 
