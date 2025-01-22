@@ -53,6 +53,8 @@ func (p *Parser) parseStatement() ast.Statement {
 	switch p.curToken.Type {
 	case token.LET:
 		return p.parseLetStatement()
+	case token.RETURN:
+		return p.parseReturnStatement()
 	default:
 		return nil
 	}
@@ -75,6 +77,20 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 
 	// Currently, we skip tokens unless we get to a semicolon
 	// effectively skipping over the expression part
+	for !p.curTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
+
+	return stmt
+}
+
+func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
+	stmt := &ast.ReturnStatement{Token: p.curToken}
+
+	p.nextToken()
+
+	// skip over the expression
+
 	for !p.curTokenIs(token.SEMICOLON) {
 		p.nextToken()
 	}
@@ -106,7 +122,7 @@ func (p *Parser) Errors() []string {
 	return p.errors
 }
 
-// peek error accepts the wrong token that was seen and adds an error 
+// peek error accepts the wrong token that was seen and adds an error
 func (p *Parser) peekError(t token.TokenType) {
 	msg := fmt.Sprintf("Expected next token to be '%s' got '%s' instead", t, p.peekToken.Type)
 	p.errors = append(p.errors, msg)
