@@ -16,6 +16,16 @@ An Interpreter for the Asteroid programming language. Written following the book
 
 | Language | Files | Lines | Blanks | Comments | Lines of Code |
 |----------|-------|-------|---------|-----------|---------------|
+| Go | 11 | 962 | 112 | 100 | 750 |
+| YAML | 2 | 136 | 21 | 15 | 100 |
+| License | 1 | 21 | 4 | 0 | 17 |
+| Markdown | 1 | 30 | 9 | 0 | 21 |
+| gitignore | 1 | 2 | 0 | 0 | 2 |
+| Total | 16 | 1151 | 146 | 115 | 890 |
+
+
+| Language | Files | Lines | Blanks | Comments | Lines of Code |
+|----------|-------|-------|---------|-----------|---------------|
 | Go | 11 | 929 | 105 | 97 | 727 |
 | YAML | 2 | 136 | 21 | 15 | 100 |
 | License | 1 | 21 | 4 | 0 | 17 |
