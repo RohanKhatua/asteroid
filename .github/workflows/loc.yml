@@ -14,17 +14,33 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Set up Go
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: "1.22.6" # Update with your Go version
+      # Step 2: Fetch LOC data and update README.md
+      - name: Fetch LOC data and update README.md
+        run: |
+          # Fetch LOC data from Codetabs API
+          LOC_DATA=$(curl -s "https://api.codetabs.com/v1/loc/?github=rohankhatua/asteroid&branch=main")
 
-      # Step 3: Run the Go script to update README.md
-      - name: Update README
-        run: go run update-readme/update-readme.go
+          # Build the Markdown table
+          TABLE="| Language    | Files | Lines | Blanks | Comments | Lines of Code |\n"
+          TABLE+="|-------------|-------|-------|--------|----------|---------------|\n"
+          echo "$LOC_DATA" | jq -c '.[]' | while read -r line; do
+            LANG=$(echo "$line" | jq -r '.language')
+            FILES=$(echo "$line" | jq -r '.files')
+            LINES=$(echo "$line" | jq -r '.lines')
+            BLANKS=$(echo "$line" | jq -r '.blanks')
+            COMMENTS=$(echo "$line" | jq -r '.comments')
+            LOC=$(echo "$line" | jq -r '.linesOfCode')
+            TABLE+=$(printf "| %-11s | %-5s | %-5s | %-6s | %-8s | %-13s |\n" "$LANG" "$FILES" "$LINES" "$BLANKS" "$COMMENTS" "$LOC")
+          done
 
-      # Step 4: Commit and push changes
+          # Replace the content between markers in README.md
+          START_MARKER="<!---start--->"
+          END_MARKER="<!---end--->"
+          README_CONTENT=$(cat readme.md)
+          UPDATED_CONTENT=$(echo "$README_CONTENT" | sed -E "/$START_MARKER/,/$END_MARKER/c\\$START_MARKER\n\n$TABLE\n\n$END_MARKER")
+          echo "$UPDATED_CONTENT" > readme.md
+
+      # Step 3: Commit and push changes
       - name: Commit and push changes
         run: |
           git config --global user.name "RohanKhatua"
