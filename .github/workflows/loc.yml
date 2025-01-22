@@ -3,7 +3,7 @@ name: Update README
 on:
   push:
     branches:
-      - main # Runs on every push to the main branch
+      - main
 
 jobs:
   update-readme:
@@ -14,11 +14,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Fetch LOC data and update README.md
+      # Step 2: Install dependencies (jq)
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      # Step 3: Fetch LOC data and update README.md
       - name: Fetch LOC data and update README.md
         run: |
           # Fetch LOC data from Codetabs API
           LOC_DATA=$(curl -s "https://api.codetabs.com/v1/loc/?github=rohankhatua/asteroid&branch=main")
+          echo "Fetched LOC data: $LOC_DATA"
 
           # Build the Markdown table
           TABLE="| Language    | Files | Lines | Blanks | Comments | Lines of Code |\n"
@@ -32,15 +37,19 @@ jobs:
             LOC=$(echo "$line" | jq -r '.linesOfCode')
             TABLE+=$(printf "| %-11s | %-5s | %-5s | %-6s | %-8s | %-13s |\n" "$LANG" "$FILES" "$LINES" "$BLANKS" "$COMMENTS" "$LOC")
           done
+          echo "Generated Table:"
+          echo -e "$TABLE"
 
           # Replace the content between markers in README.md
           START_MARKER="<!---start--->"
           END_MARKER="<!---end--->"
           README_CONTENT=$(cat readme.md)
           UPDATED_CONTENT=$(echo "$README_CONTENT" | sed -E "/$START_MARKER/,/$END_MARKER/c\\$START_MARKER\n\n$TABLE\n\n$END_MARKER")
+          echo "Updated README.md content:"
+          echo "$UPDATED_CONTENT"
           echo "$UPDATED_CONTENT" > readme.md
 
-      # Step 3: Commit and push changes
+      # Step 4: Commit and push changes
       - name: Commit and push changes
         run: |
           git config --global user.name "RohanKhatua"
