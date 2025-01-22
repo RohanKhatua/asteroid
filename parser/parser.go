@@ -4,6 +4,7 @@ import (
 	"asteroid/ast"
 	"asteroid/lexer"
 	"asteroid/token"
+	"fmt"
 )
 
 type Parser struct {
@@ -11,10 +12,12 @@ type Parser struct {
 
 	curToken  token.Token
 	peekToken token.Token
+	errors    []string
 }
 
 func New(l *lexer.Lexer) *Parser {
-	p := &Parser{l: l}
+	p := &Parser{l: l,
+		errors: []string{}}
 
 	p.nextToken()
 	p.nextToken()
@@ -63,7 +66,7 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 		return nil
 	}
 
-	// if it is indeed an identifier 
+	// if it is indeed an identifier
 	stmt.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 
 	if !p.expectPeek(token.ASSIGN) {
@@ -92,6 +95,19 @@ func (p *Parser) expectPeek(t token.TokenType) bool {
 		p.nextToken()
 		return true
 	} else {
+		// if the next token's type does not match our expectation - we add it to the list of errors.
+		p.peekError(t)
 		return false
 	}
+}
+
+// Helper fucntions to get all the errors encountered by the parser
+func (p *Parser) Errors() []string {
+	return p.errors
+}
+
+// peek error accepts the wrong token that was seen and adds an error 
+func (p *Parser) peekError(t token.TokenType) {
+	msg := fmt.Sprintf("Expected next token to be '%s' got '%s' instead", t, p.peekToken.Type)
+	p.errors = append(p.errors, msg)
 }
